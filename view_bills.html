@@ -1,216 +1,310 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Daily Ledger</title>
+    <title>Ledger History</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        dark: '#0f172a', /* Slate 900 */
-                        card: '#1e293b', /* Slate 800 */
-                        accent: '#6366f1', /* Indigo 500 */
+                        gold: '#fbbf24',
+                        deep: '#020617',
+                        surface: '#0f172a',
+                        border: '#334155',
                     }
                 }
             }
         }
     </script>
+
     <style>
-        /* Hide scrollbar for clean UI but allow scrolling */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .premium-box {
+            background-image: linear-gradient(to bottom right, #1e293b, #020617);
+            border: 1px solid #334155;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+        }
+
+        /* Custom Scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        /* Sticky Column Styling */
+        .sticky-col {
+            position: sticky;
+            right: 0;
+            background-color: #0f172a;
+            box-shadow: -4px 0 10px rgba(0,0,0,0.5);
+            border-left: 1px solid #334155;
+            z-index: 20;
+        }
     </style>
 </head>
-<body class="bg-dark text-slate-100 h-screen w-screen flex flex-col overflow-hidden font-sans selection:bg-indigo-500 selection:text-white">
 
-    <header class="flex justify-between items-center px-4 py-3 bg-card/50 backdrop-blur-md border-b border-slate-700/50 shrink-0 z-20">
+<body class="bg-deep text-slate-200 h-[100dvh] w-screen flex flex-col overflow-hidden font-sans">
+
+    <header class="flex justify-between items-center px-6 py-4 bg-surface/90 border-b border-border shrink-0 z-20">
         <div>
-            <h1 class="text-lg font-black tracking-wider text-white uppercase bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                Daily<span class="text-indigo-500">Ledger</span>
-            </h1>
-            <p class="text-[10px] text-slate-400 font-mono mt-0.5" id="currentDate">--/--/----</p>
+            <div class="text-lg font-black text-white tracking-wide">
+                DAILY <span class="text-gold">LEDGER</span>
+            </div>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5" id="currentDate">--/--/----</p>
         </div>
-        
-        <div class="flex space-x-2">
-            <button onclick="downloadPDF()" class="bg-slate-700/50 hover:bg-rose-500/20 text-slate-200 hover:text-rose-400 border border-slate-600 hover:border-rose-500/50 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center">
-                <i class="fas fa-file-pdf mr-2"></i> PDF
+
+        <div class="flex gap-3">
+            <button onclick="downloadPDF()"
+                class="h-10 w-10 rounded-full border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition">
+                <i class="fas fa-file-pdf"></i>
             </button>
-            <a href="index.html" class="bg-indigo-600 hover:bg-indigo-500 text-white border border-indigo-500 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-lg shadow-indigo-500/20">
-                <i class="fas fa-plus mr-2"></i> New
+            
+            <a href="index.html"
+                class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 px-5 py-2 rounded-full font-bold shadow-lg active:scale-95 transition">
+                <i class="fas fa-plus text-xs"></i>
+                <span class="text-xs uppercase tracking-wider">New</span>
             </a>
         </div>
     </header>
 
-    <div id="printableArea" class="flex-1 flex flex-col p-2 gap-3 overflow-hidden">
+    <div id="printableArea" class="flex-1 flex flex-col px-4 py-4 gap-4 min-h-0">
 
-        <div class="grid grid-cols-2 gap-2 shrink-0">
+        <div class="shrink-0 flex flex-col gap-2">
             
-            <div class="bg-card/50 p-3 rounded-xl border border-slate-700/50">
-                <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Total Gross</p>
-                <p class="text-xl font-bold text-slate-200">₹<span id="totalGross">0</span></p>
-            </div>
-
-            <div class="bg-card/50 p-3 rounded-xl border border-slate-700/50 relative overflow-hidden group">
-                <div class="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition"></div>
-                <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Total Net (Coll)</p>
-                <p class="text-xl font-bold text-emerald-400">₹<span id="totalNet">0</span></p>
-            </div>
-
-            <div class="bg-card/50 p-3 rounded-xl border border-slate-700/50 flex justify-between items-center">
-                <div>
-                    <p class="text-[9px] text-slate-500 font-bold uppercase mb-1">Expenses</p>
-                    <p class="text-[9px] text-slate-600">Comm + Hamali</p>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-400">Total Gross</p>
+                    <p class="text-lg font-bold text-white mt-1">₹<span id="summGross">0</span></p>
                 </div>
-                <div class="text-right">
-                    <p class="text-lg font-bold text-rose-400">₹<span id="totalExpenses">0</span></p>
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-400">Total Net</p>
+                    <p class="text-lg font-bold text-white mt-1">₹<span id="summNet">0</span></p>
+                </div>
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-amber-500">Total Advance</p>
+                    <p class="text-lg font-bold text-amber-500 mt-1">₹<span id="summAdvance">0</span></p>
                 </div>
             </div>
 
-            <div class="bg-gradient-to-br from-indigo-900 to-indigo-800 p-3 rounded-xl border border-indigo-500/30 flex justify-between items-center relative overflow-hidden">
-                <div class="absolute -right-4 -top-4 w-16 h-16 bg-indigo-500/20 rounded-full blur-xl"></div>
-                <div>
-                    <p class="text-[10px] text-indigo-200 font-bold uppercase mb-1">Final Payable</p>
-                    <p class="text-[9px] text-indigo-300/70">To Office</p>
+            <div class="grid grid-cols-3 gap-2">
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-400">Commission</p>
+                    <p class="text-lg font-bold text-rose-300 mt-1">₹<span id="summComm">0</span></p>
                 </div>
-                <p class="text-2xl font-black text-white drop-shadow-md">₹<span id="totalPayable">0</span></p>
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-slate-400">Hamali</p>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="text-lg font-bold text-rose-300">₹<span id="summHamali">0</span></span>
+                        <span class="text-[9px] text-slate-500 font-bold">(<span id="summBags">0</span> Bags)</span>
+                    </div>
+                </div>
+                <div class="premium-box rounded-xl px-3 py-3">
+                    <p class="text-[9px] uppercase tracking-widest text-rose-500">Tot. Deduct</p>
+                    <p class="text-lg font-bold text-rose-500 mt-1">₹<span id="summDeduct">0</span></p>
+                </div>
+            </div>
+
+            <div class="premium-box rounded-xl px-4 py-3 border-gold/30 relative overflow-hidden flex justify-between items-center">
+                <div class="absolute inset-0 bg-gold/5"></div>
+                <p class="text-xs font-bold uppercase tracking-widest text-gold relative z-10">Total Payable Amount</p>
+                <p class="text-2xl font-black text-gold relative z-10">₹<span id="summPayable">0</span></p>
             </div>
         </div>
 
-        <div class="flex-1 bg-card rounded-xl border border-slate-700/50 overflow-hidden flex flex-col">
-            <div class="overflow-auto no-scrollbar flex-1">
-                <table class="w-full text-sm text-left whitespace-nowrap">
-                    <thead class="bg-dark/50 text-slate-500 font-bold uppercase text-[10px] sticky top-0 z-10 backdrop-blur-sm">
-                        <tr>
-                            <th class="p-3">Bill</th>
-                            <th class="p-3">Gross</th>
-                            <th class="p-3">Net</th>
-                            <th class="p-3">Bags</th>
-                            <th class="p-3">Comm</th>
-                            <th class="p-3">Hamali</th>
-                            <th class="p-3 text-right text-indigo-400">Payable</th>
-                            <th class="p-3 text-center w-10" data-html2canvas-ignore="true"><i class="fas fa-cog"></i></th>
+        <div class="flex-1 premium-box rounded-xl overflow-hidden flex flex-col relative min-h-0">
+            
+            <div class="overflow-auto custom-scroll flex-1">
+                <table class="w-full text-left border-collapse whitespace-nowrap">
+                    <thead class="bg-surface sticky top-0 z-30">
+                        <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700">
+                            <th class="px-4 py-3 min-w-[60px]">Bill</th>
+                            <th class="px-4 py-3 min-w-[100px]">Total</th>
+                            <th class="px-4 py-3 min-w-[100px]">Net</th>
+                            <th class="px-4 py-3 min-w-[100px] text-amber-500">Advance</th>
+                            <th class="px-4 py-3 min-w-[60px]">Bags</th>
+                            <th class="px-4 py-3 min-w-[60px]">C%</th>
+                            <th class="px-4 py-3 min-w-[90px]">Comm</th>
+                            <th class="px-4 py-3 min-w-[90px]">Hamali</th>
+                            <th class="px-4 py-3 min-w-[90px] text-rose-400">Deduct</th>
+                            <th class="px-4 py-3 min-w-[120px] text-right sticky-col text-gold">Net Paid</th>
+                            <th class="px-4 py-3 min-w-[50px] text-center" data-html2canvas-ignore="true"><i class="fas fa-trash"></i></th>
                         </tr>
                     </thead>
-                    <tbody id="billTableBody" class="divide-y divide-slate-700/50 text-slate-300">
+                    <tbody id="billTableBody" class="divide-y divide-slate-700/50 text-sm">
                         </tbody>
                 </table>
-                
-                <div id="emptyState" class="hidden h-full flex flex-col items-center justify-center text-slate-600 space-y-2 p-10">
-                    <i class="fas fa-receipt text-4xl opacity-20"></i>
-                    <p class="text-sm italic">No bills added today</p>
+                 <div id="emptyState" class="hidden h-32 flex flex-col items-center justify-center text-slate-600 mt-10">
+                    <i class="fas fa-table text-3xl mb-2 opacity-20"></i>
+                    <p class="text-xs uppercase tracking-widest opacity-50">No Data Available</p>
                 </div>
             </div>
         </div>
-        
+
     </div>
-    
-    <div class="p-2 text-center shrink-0">
-        <button onclick="clearDay()" class="text-rose-500/70 hover:text-rose-400 text-[10px] font-bold uppercase tracking-widest transition flex items-center justify-center w-full py-2">
-           <i class="fas fa-trash-alt mr-2"></i> Clear Ledger
+
+    <div class="p-4 text-center shrink-0 border-t border-slate-800 bg-deep">
+        <button onclick="clearDay()"
+            class="text-rose-500/60 hover:text-rose-500 text-[10px] font-bold uppercase tracking-[0.2em] transition flex items-center justify-center w-full py-2 hover:bg-rose-500/10 rounded-lg">
+            <i class="fas fa-trash-alt mr-2"></i> Clear History
         </button>
     </div>
 
     <script>
-        const todayKey = new Date().toLocaleDateString('en-GB'); 
-        document.getElementById('currentDate').innerText = todayKey;
+    // --- 1. DATE SETUP ---
+    function getTodayKey() {
+        const d = new Date();
+        const day = String(d.getDate()).padStart(2, '0');
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const year = d.getFullYear();
+        return `${day}/${month}/${year}`;
+    }
 
-        function loadData() {
-            const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
-            const bills = allData[todayKey] || [];
-            
-            const tbody = document.getElementById('billTableBody');
-            tbody.innerHTML = '';
+    const todayKey = getTodayKey(); 
+    document.getElementById('currentDate').innerText = todayKey;
 
-            let tGross = 0, tNet = 0, tComm = 0, tHamali = 0, tPayable = 0;
+    // --- 2. LOAD DATA ---
+    function loadData() {
+        const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
+        const bills = allData[todayKey] || [];
+        
+        const tbody = document.getElementById('billTableBody');
+        tbody.innerHTML = '';
 
-            if (bills.length === 0) {
-                document.getElementById('emptyState').classList.remove('hidden');
-            } else {
-                document.getElementById('emptyState').classList.add('hidden');
-            }
+        let tGross = 0;
+        let tNetInput = 0; // The Net entered by user
+        let tAdvance = 0;
+        let tComm = 0;
+        let tHamali = 0;
+        let tBags = 0;
+        let tDeduct = 0;
+        let tPayable = 0;
 
-            // Loop in reverse to show newest first
-            bills.slice().reverse().forEach((bill, reverseIndex) => {
-                const originalIndex = bills.length - 1 - reverseIndex;
-                
-                const pGross = parseFloat(bill.gross);
-                const pNet = parseFloat(bill.net);
-                const pComm = parseFloat(bill.comm);
-                const pHamali = parseFloat(bill.hamali);
-                const pPayable = parseFloat(bill.payable);
-
-                tGross += pGross;
-                tNet += pNet;
-                tComm += pComm;
-                tHamali += pHamali;
-                tPayable += pPayable;
-
-                const row = `
-                    <tr class="hover:bg-indigo-500/5 transition group">
-                        <td class="p-3 font-bold text-indigo-400 border-r border-slate-700/50">#${bill.no}</td>
-                        <td class="p-3">₹${pGross}</td>
-                        <td class="p-3 font-medium text-emerald-400">₹${pNet}</td>
-                        <td class="p-3 text-slate-500 text-xs">${bill.bags} <span class="text-[9px] opacity-50">(${bill.rateVal||'2%'})</span></td>
-                        <td class="p-3 text-rose-400/80 text-xs">₹${pComm}</td>
-                        <td class="p-3 text-rose-400/80 text-xs">₹${pHamali}</td>
-                        <td class="p-3 text-right font-bold text-white bg-slate-800/30 border-l border-slate-700/50">₹${pPayable}</td>
-                        <td class="p-3 text-center" data-html2canvas-ignore="true">
-                            <button onclick="deleteBill(${originalIndex})" class="text-slate-600 hover:text-rose-500 transition px-2 py-1"><i class="fas fa-times"></i></button>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += row;
-            });
-
-            // Update Summary Boxes
-            document.getElementById('totalGross').innerText = tGross.toLocaleString('en-IN');
-            document.getElementById('totalNet').innerText = tNet.toLocaleString('en-IN');
-            
-            // Combined Expenses
-            const totalExp = tComm + tHamali;
-            document.getElementById('totalExpenses').innerText = totalExp.toLocaleString('en-IN');
-            
-            document.getElementById('totalPayable').innerText = tPayable.toLocaleString('en-IN');
+        if (bills.length === 0) {
+            document.getElementById('emptyState').classList.remove('hidden');
+        } else {
+            document.getElementById('emptyState').classList.add('hidden');
         }
 
-        function deleteBill(index) {
-            const allData = JSON.parse(localStorage.getItem('dailyBillsStore'));
-            allData[todayKey].splice(index, 1);
+        // Reverse to show newest top
+        bills.slice().reverse().forEach((bill, reverseIndex) => {
+            const originalIndex = bills.length - 1 - reverseIndex;
+            
+            const pGross = parseFloat(bill.gross);
+            const pNetInput = parseFloat(bill.net); // This is the Net Input (Gross - Advance essentially)
+            const pComm = parseFloat(bill.comm);
+            const pHamali = parseFloat(bill.hamali);
+            const pBags = parseFloat(bill.bags);
+            const pPayable = parseFloat(bill.payable);
+            
+            // Advance = Gross - NetInput
+            const pAdvance = (pGross > 0 && pNetInput > 0) ? (pGross - pNetInput) : 0;
+            const pTotalDed = pComm + pHamali;
+
+            // Aggregates
+            tGross += pGross;
+            tNetInput += pNetInput;
+            tAdvance += pAdvance;
+            tComm += pComm;
+            tHamali += pHamali;
+            tBags += pBags;
+            tDeduct += pTotalDed;
+            tPayable += pPayable;
+
+            const row = `
+                <tr class="hover:bg-slate-800/50 transition group">
+                    <td class="px-4 py-3 font-bold text-white">#${bill.no}</td>
+                    <td class="px-4 py-3 text-slate-300">₹${pGross}</td>
+                    <td class="px-4 py-3 text-slate-300">₹${pNetInput}</td>
+                    <td class="px-4 py-3 font-medium text-amber-500">₹${pAdvance}</td>
+                    <td class="px-4 py-3 text-slate-400">${bill.bags}</td>
+                    <td class="px-4 py-3 text-slate-400">${bill.rateVal || '2%'}</td>
+                    <td class="px-4 py-3 text-slate-400">₹${pComm}</td>
+                    <td class="px-4 py-3 text-slate-400">₹${pHamali}</td>
+                    <td class="px-4 py-3 font-medium text-rose-400">₹${pTotalDed}</td>
+                    
+                    <td class="px-4 py-3 text-right font-black text-white sticky-col">
+                        ₹${pPayable}
+                    </td>
+
+                    <td class="px-4 py-3 text-center" data-html2canvas-ignore="true">
+                        <button onclick="deleteBill(${originalIndex})" class="text-slate-600 hover:text-rose-500 transition">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+
+        // Update Summary Boxes
+        // Row 1
+        document.getElementById('summGross').innerText = tGross.toLocaleString('en-IN');
+        document.getElementById('summNet').innerText = tNetInput.toLocaleString('en-IN');
+        document.getElementById('summAdvance').innerText = tAdvance.toLocaleString('en-IN');
+        
+        // Row 2
+        document.getElementById('summComm').innerText = tComm.toLocaleString('en-IN');
+        document.getElementById('summHamali').innerText = tHamali.toLocaleString('en-IN');
+        document.getElementById('summBags').innerText = tBags;
+        document.getElementById('summDeduct').innerText = tDeduct.toLocaleString('en-IN');
+
+        // Final Bar
+        document.getElementById('summPayable').innerText = tPayable.toLocaleString('en-IN');
+    }
+
+    // --- 3. ACTIONS ---
+    function deleteBill(index) {
+        if(!confirm("Delete this bill?")) return;
+        const allData = JSON.parse(localStorage.getItem('dailyBillsStore'));
+        allData[todayKey].splice(index, 1);
+        localStorage.setItem('dailyBillsStore', JSON.stringify(allData));
+        loadData();
+    }
+
+    function clearDay() {
+        if(confirm("Are you sure? This will delete ALL bills for today.")) {
+            const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
+            delete allData[todayKey];
             localStorage.setItem('dailyBillsStore', JSON.stringify(allData));
             loadData();
         }
+    }
 
-        function clearDay() {
-            if(confirm("Delete entire history for today?")) {
-                localStorage.removeItem('dailyBillsStore');
-                loadData();
-            }
-        }
+    function downloadPDF() {
+        const stickies = document.querySelectorAll('.sticky-col');
+        stickies.forEach(el => el.classList.remove('sticky-col'));
+        
+        const element = document.getElementById('printableArea');
+        const dateStr = todayKey.replace(/\//g, '-');
+        const filename = `Ledger_${dateStr}.pdf`;
+        
+        const opt = {
+            margin:       0.1,
+            filename:     filename,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, backgroundColor: '#020617', useCORS: true }, 
+            jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+        };
+        
+        html2pdf().set(opt).from(element).save().then(() => {
+            loadData();
+        });
+    }
 
-        function downloadPDF() {
-            const element = document.getElementById('printableArea');
-            const dateStr = todayKey.replace(/\//g, '-');
-            const filename = `Ledger_${dateStr}.pdf`;
-
-            // Optional: You might want to switch themes for printing, but for now this prints the dark view
-            const opt = {
-                margin:       0.2,
-                filename:     filename,
-                image:        { type: 'jpeg', quality: 0.98 },
-                html2canvas:  { scale: 2, backgroundColor: '#0f172a' }, // Dark background for PDF
-                jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
-            };
-
-            html2pdf().set(opt).from(element).save();
-        }
-
-        // Initialize
-        loadData();
+    loadData();
     </script>
 </body>
 </html>
