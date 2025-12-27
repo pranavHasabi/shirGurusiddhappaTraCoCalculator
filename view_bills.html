@@ -36,9 +36,11 @@
             height: 6px;
             width: 6px;
         }
+
         .custom-scroll::-webkit-scrollbar-track {
             background: #0f172a;
         }
+
         .custom-scroll::-webkit-scrollbar-thumb {
             background: #334155;
             border-radius: 4px;
@@ -49,29 +51,36 @@
             position: sticky;
             right: 0;
             background-color: #0f172a;
-            box-shadow: -4px 0 10px rgba(0,0,0,0.5);
+            box-shadow: -4px 0 10px rgba(0, 0, 0, 0.5);
             border-left: 1px solid #334155;
             z-index: 20;
+        }
+
+        /* Modal Blur */
+        .modal-backdrop {
+            backdrop-filter: blur(4px);
+            background-color: rgba(2, 6, 23, 0.8);
         }
     </style>
 </head>
 
-<body class="bg-deep text-slate-200 h-[100dvh] w-screen flex flex-col overflow-hidden font-sans">
+<body class="bg-deep text-slate-200 h-[100dvh] w-screen flex flex-col overflow-hidden font-sans relative">
 
     <header class="flex justify-between items-center px-6 py-4 bg-surface/90 border-b border-border shrink-0 z-20">
         <div>
             <div class="text-lg font-black text-white tracking-wide">
-                DAILY <span class="text-gold">LEDGER</span>
+                ಶ್ರೀ ಗುರುಸಿದ್ಧಪ್ಪ <span class="text-gold">ಟ್ರೇಡಿಂಗ್ ಕಂಪನಿ</span>
             </div>
-            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5" id="currentDate">--/--/----</p>
+            <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-0.5" id="currentDate">--/--/----
+            </p>
         </div>
 
         <div class="flex gap-3">
-            <button onclick="downloadPDF()"
+            <button onclick="requestAuth('download')"
                 class="h-10 w-10 rounded-full border border-slate-700 flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition">
                 <i class="fas fa-file-pdf"></i>
             </button>
-            
+
             <a href="index.html"
                 class="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-slate-900 px-5 py-2 rounded-full font-bold shadow-lg active:scale-95 transition">
                 <i class="fas fa-plus text-xs"></i>
@@ -83,7 +92,7 @@
     <div id="printableArea" class="flex-1 flex flex-col px-4 py-4 gap-4 min-h-0">
 
         <div class="shrink-0 flex flex-col gap-2">
-            
+
             <div class="grid grid-cols-3 gap-2">
                 <div class="premium-box rounded-xl px-3 py-3">
                     <p class="text-[9px] uppercase tracking-widest text-slate-400">Total Gross</p>
@@ -117,7 +126,8 @@
                 </div>
             </div>
 
-            <div class="premium-box rounded-xl px-4 py-3 border-gold/30 relative overflow-hidden flex justify-between items-center">
+            <div
+                class="premium-box rounded-xl px-4 py-3 border-gold/30 relative overflow-hidden flex justify-between items-center">
                 <div class="absolute inset-0 bg-gold/5"></div>
                 <p class="text-xs font-bold uppercase tracking-widest text-gold relative z-10">Total Payable Amount</p>
                 <p class="text-2xl font-black text-gold relative z-10">₹<span id="summPayable">0</span></p>
@@ -125,11 +135,11 @@
         </div>
 
         <div class="flex-1 premium-box rounded-xl overflow-hidden flex flex-col relative min-h-0">
-            
             <div class="overflow-auto custom-scroll flex-1">
                 <table class="w-full text-left border-collapse whitespace-nowrap">
                     <thead class="bg-surface sticky top-0 z-30">
-                        <tr class="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700">
+                        <tr
+                            class="text-[10px] font-bold uppercase tracking-widest text-slate-500 border-b border-slate-700">
                             <th class="px-4 py-3 min-w-[60px]">Bill</th>
                             <th class="px-4 py-3 min-w-[100px]">Total</th>
                             <th class="px-4 py-3 min-w-[100px]">Net</th>
@@ -140,90 +150,124 @@
                             <th class="px-4 py-3 min-w-[90px]">Hamali</th>
                             <th class="px-4 py-3 min-w-[90px] text-rose-400">Deduct</th>
                             <th class="px-4 py-3 min-w-[120px] text-right sticky-col text-gold">Net Paid</th>
-                            <th class="px-4 py-3 min-w-[50px] text-center" data-html2canvas-ignore="true"><i class="fas fa-trash"></i></th>
+                            <th class="px-4 py-3 min-w-[50px] text-center" data-html2canvas-ignore="true"><i
+                                    class="fas fa-trash"></i></th>
                         </tr>
                     </thead>
                     <tbody id="billTableBody" class="divide-y divide-slate-700/50 text-sm">
-                        </tbody>
+                    </tbody>
                 </table>
-                 <div id="emptyState" class="hidden h-32 flex flex-col items-center justify-center text-slate-600 mt-10">
+                <div id="emptyState" class="hidden h-32 flex flex-col items-center justify-center text-slate-600 mt-10">
                     <i class="fas fa-table text-3xl mb-2 opacity-20"></i>
                     <p class="text-xs uppercase tracking-widest opacity-50">No Data Available</p>
                 </div>
             </div>
         </div>
-
     </div>
 
     <div class="p-4 text-center shrink-0 border-t border-slate-800 bg-deep">
-        <button onclick="clearDay()"
+        <button onclick="requestAuth('clear')"
             class="text-rose-500/60 hover:text-rose-500 text-[10px] font-bold uppercase tracking-[0.2em] transition flex items-center justify-center w-full py-2 hover:bg-rose-500/10 rounded-lg">
             <i class="fas fa-trash-alt mr-2"></i> Clear History
         </button>
     </div>
 
+    <div id="authModal"
+        class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop animate-fade-in">
+        <div class="bg-surface border border-border p-6 rounded-2xl shadow-2xl w-80 transform transition-all scale-100">
+            <div class="text-center mb-4">
+                <div class="h-12 w-12 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fas fa-lock text-gold text-lg"></i>
+                </div>
+                <h3 class="text-white font-bold text-lg">Admin Access</h3>
+                <p class="text-slate-400 text-xs mt-1">Enter password to proceed</p>
+            </div>
+
+            <input type="password" id="authInput" placeholder="Password"
+                class="w-full bg-deep border border-border rounded-lg px-4 py-2 text-white text-center tracking-widest focus:outline-none focus:border-gold mb-2"
+                onkeypress="handleEnter(event)">
+
+            <p id="authError" class="text-rose-500 text-[10px] text-center font-bold mb-4 hidden">
+                <i class="fas fa-exclamation-circle mr-1"></i> Incorrect Password
+            </p>
+
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <button onclick="closeAuth()"
+                    class="py-2 text-slate-400 text-sm hover:text-white transition">Cancel</button>
+                <button onclick="submitAuth()"
+                    class="py-2 bg-gold text-deep font-bold rounded-lg text-sm hover:bg-yellow-400 transition">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-    // --- 1. DATE SETUP ---
-    function getTodayKey() {
-        const d = new Date();
-        const day = String(d.getDate()).padStart(2, '0');
-        const month = String(d.getMonth() + 1).padStart(2, '0');
-        const year = d.getFullYear();
-        return `${day}/${month}/${year}`;
-    }
+        // =========================================
+        // CONFIGURATION
+        // =========================================
+        const ADMIN_PASSWORD = "n"; // <--- CHANGE PASSWORD HERE
 
-    const todayKey = getTodayKey(); 
-    document.getElementById('currentDate').innerText = todayKey;
+        // Auth State Variables
+        let pendingAction = null;
+        let pendingPayload = null;
 
-    // --- 2. LOAD DATA ---
-    function loadData() {
-        const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
-        const bills = allData[todayKey] || [];
-        
-        const tbody = document.getElementById('billTableBody');
-        tbody.innerHTML = '';
-
-        let tGross = 0;
-        let tNetInput = 0; // The Net entered by user
-        let tAdvance = 0;
-        let tComm = 0;
-        let tHamali = 0;
-        let tBags = 0;
-        let tDeduct = 0;
-        let tPayable = 0;
-
-        if (bills.length === 0) {
-            document.getElementById('emptyState').classList.remove('hidden');
-        } else {
-            document.getElementById('emptyState').classList.add('hidden');
+        // --- 1. DATE SETUP ---
+        function getTodayKey() {
+            const d = new Date();
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            return `${day}/${month}/${year}`;
         }
 
-        // Reverse to show newest top
-        bills.slice().reverse().forEach((bill, reverseIndex) => {
-            const originalIndex = bills.length - 1 - reverseIndex;
-            
-            const pGross = parseFloat(bill.gross);
-            const pNetInput = parseFloat(bill.net); // This is the Net Input (Gross - Advance essentially)
-            const pComm = parseFloat(bill.comm);
-            const pHamali = parseFloat(bill.hamali);
-            const pBags = parseFloat(bill.bags);
-            const pPayable = parseFloat(bill.payable);
-            
-            // Advance = Gross - NetInput
-            const pAdvance = (pGross > 0 && pNetInput > 0) ? (pGross - pNetInput) : 0;
-            const pTotalDed = pComm + pHamali;
+        const todayKey = getTodayKey();
+        document.getElementById('currentDate').innerText = todayKey;
 
-            // Aggregates
-            tGross += pGross;
-            tNetInput += pNetInput;
-            tAdvance += pAdvance;
-            tComm += pComm;
-            tHamali += pHamali;
-            tBags += pBags;
-            tDeduct += pTotalDed;
-            tPayable += pPayable;
+        // --- 2. LOAD DATA ---
+        function loadData() {
+            const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
+            const bills = allData[todayKey] || [];
 
-            const row = `
+            const tbody = document.getElementById('billTableBody');
+            tbody.innerHTML = '';
+
+            let tGross = 0;
+            let tNetInput = 0;
+            let tAdvance = 0;
+            let tComm = 0;
+            let tHamali = 0;
+            let tBags = 0;
+            let tDeduct = 0;
+            let tPayable = 0;
+
+            if (bills.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
+            } else {
+                document.getElementById('emptyState').classList.add('hidden');
+            }
+
+            bills.slice().reverse().forEach((bill, reverseIndex) => {
+                const originalIndex = bills.length - 1 - reverseIndex;
+
+                const pGross = parseFloat(bill.gross);
+                const pNetInput = parseFloat(bill.net);
+                const pComm = parseFloat(bill.comm);
+                const pHamali = parseFloat(bill.hamali);
+                const pBags = parseFloat(bill.bags);
+                const pPayable = parseFloat(bill.payable);
+
+                const pAdvance = (pGross > 0 && pNetInput > 0) ? (pGross - pNetInput) : 0;
+                const pTotalDed = pComm + pHamali;
+
+                tGross += pGross;
+                tNetInput += pNetInput;
+                tAdvance += pAdvance;
+                tComm += pComm;
+                tHamali += pHamali;
+                tBags += pBags;
+                tDeduct += pTotalDed;
+                tPayable += pPayable;
+
+                const row = `
                 <tr class="hover:bg-slate-800/50 transition group">
                     <td class="px-4 py-3 font-bold text-white">#${bill.no}</td>
                     <td class="px-4 py-3 text-slate-300">₹${pGross}</td>
@@ -240,71 +284,114 @@
                     </td>
 
                     <td class="px-4 py-3 text-center" data-html2canvas-ignore="true">
-                        <button onclick="deleteBill(${originalIndex})" class="text-slate-600 hover:text-rose-500 transition">
+                        <button onclick="requestAuth('delete', ${originalIndex})" class="text-slate-600 hover:text-rose-500 transition">
                             <i class="fas fa-times"></i>
                         </button>
                     </td>
                 </tr>
             `;
-            tbody.innerHTML += row;
-        });
+                tbody.innerHTML += row;
+            });
 
-        // Update Summary Boxes
-        // Row 1
-        document.getElementById('summGross').innerText = tGross.toLocaleString('en-IN');
-        document.getElementById('summNet').innerText = tNetInput.toLocaleString('en-IN');
-        document.getElementById('summAdvance').innerText = tAdvance.toLocaleString('en-IN');
-        
-        // Row 2
-        document.getElementById('summComm').innerText = tComm.toLocaleString('en-IN');
-        document.getElementById('summHamali').innerText = tHamali.toLocaleString('en-IN');
-        document.getElementById('summBags').innerText = tBags;
-        document.getElementById('summDeduct').innerText = tDeduct.toLocaleString('en-IN');
+            document.getElementById('summGross').innerText = tGross.toLocaleString('en-IN');
+            document.getElementById('summNet').innerText = tNetInput.toLocaleString('en-IN');
+            document.getElementById('summAdvance').innerText = tAdvance.toLocaleString('en-IN');
+            document.getElementById('summComm').innerText = tComm.toLocaleString('en-IN');
+            document.getElementById('summHamali').innerText = tHamali.toLocaleString('en-IN');
+            document.getElementById('summBags').innerText = tBags;
+            document.getElementById('summDeduct').innerText = tDeduct.toLocaleString('en-IN');
+            document.getElementById('summPayable').innerText = tPayable.toLocaleString('en-IN');
+        }
 
-        // Final Bar
-        document.getElementById('summPayable').innerText = tPayable.toLocaleString('en-IN');
-    }
+        // --- 3. AUTH LOGIC (FIXED) ---
+        function requestAuth(action, payload = null) {
+            pendingAction = action;
+            pendingPayload = payload;
 
-    // --- 3. ACTIONS ---
-    function deleteBill(index) {
-        if(!confirm("Delete this bill?")) return;
-        const allData = JSON.parse(localStorage.getItem('dailyBillsStore'));
-        allData[todayKey].splice(index, 1);
-        localStorage.setItem('dailyBillsStore', JSON.stringify(allData));
-        loadData();
-    }
+            // Reset and Show Modal
+            const modal = document.getElementById('authModal');
+            const input = document.getElementById('authInput');
+            const error = document.getElementById('authError');
 
-    function clearDay() {
-        if(confirm("Are you sure? This will delete ALL bills for today.")) {
+            input.value = '';
+            error.classList.add('hidden');
+            modal.classList.remove('hidden');
+            input.focus();
+        }
+
+        function closeAuth() {
+            document.getElementById('authModal').classList.add('hidden');
+            pendingAction = null;
+            pendingPayload = null;
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') submitAuth();
+        }
+
+        function submitAuth() {
+            const input = document.getElementById('authInput').value;
+            const error = document.getElementById('authError');
+
+            if (input === ADMIN_PASSWORD) {
+                // FIX: Capture the action BEFORE closing (because closing wipes the memory)
+                const actionToPerform = pendingAction;
+                const payloadToUse = pendingPayload;
+
+                closeAuth(); // Close modal
+
+                // Execute the saved action
+                if (actionToPerform === 'delete') performDelete(payloadToUse);
+                if (actionToPerform === 'clear') performClear();
+                if (actionToPerform === 'download') performDownload();
+
+            } else {
+                // Password Incorrect
+                error.classList.remove('hidden');
+                document.getElementById('authInput').value = '';
+                document.getElementById('authInput').focus();
+            }
+        }
+
+        // --- 4. PROTECTED ACTIONS ---
+        function performDelete(index) {
+            const allData = JSON.parse(localStorage.getItem('dailyBillsStore'));
+            allData[todayKey].splice(index, 1);
+            localStorage.setItem('dailyBillsStore', JSON.stringify(allData));
+            loadData();
+        }
+
+        function performClear() {
             const allData = JSON.parse(localStorage.getItem('dailyBillsStore')) || {};
             delete allData[todayKey];
             localStorage.setItem('dailyBillsStore', JSON.stringify(allData));
             loadData();
         }
-    }
 
-    function downloadPDF() {
-        const stickies = document.querySelectorAll('.sticky-col');
-        stickies.forEach(el => el.classList.remove('sticky-col'));
-        
-        const element = document.getElementById('printableArea');
-        const dateStr = todayKey.replace(/\//g, '-');
-        const filename = `Ledger_${dateStr}.pdf`;
-        
-        const opt = {
-            margin:       0.1,
-            filename:     filename,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2, backgroundColor: '#020617', useCORS: true }, 
-            jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-        };
-        
-        html2pdf().set(opt).from(element).save().then(() => {
-            loadData();
-        });
-    }
+        function performDownload() {
+            const stickies = document.querySelectorAll('.sticky-col');
+            stickies.forEach(el => el.classList.remove('sticky-col'));
 
-    loadData();
+            const element = document.getElementById('printableArea');
+            const dateStr = todayKey.replace(/\//g, '-');
+            const filename = `ಶ್ರೀ ಗುರುಸಿದ್ಧಪ್ಪ ಟ್ರೇಡಿಂಗ್ ಕಂಪನಿ : ${dateStr}.pdf`;
+
+            const opt = {
+                margin: 0.1,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, backgroundColor: '#020617', useCORS: true },
+                jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                loadData();
+            });
+        }
+
+        // Initial Load
+        loadData();
     </script>
 </body>
+
 </html>
