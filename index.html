@@ -49,143 +49,146 @@
 
         .error-box {
             border-color: #fb7185 !important;
-            box-shadow:
-                0 0 0 3px rgba(251, 113, 133, 0.6),
-                inset 0 0 0 1px rgba(251, 113, 133, 0.8) !important;
-            background-image: linear-gradient(to bottom right,
-                    rgba(251, 113, 133, 0.12),
-                    rgba(2, 6, 23, 0.95)) !important;
+            box-shadow: 0 0 0 3px rgba(251, 113, 133, 0.6), inset 0 0 0 1px rgba(251, 113, 133, 0.8) !important;
+            background-image: linear-gradient(to bottom right, rgba(251, 113, 133, 0.12), rgba(2, 6, 23, 0.95)) !important;
+        }
+
+        /* Custom Scrollbar (Matches View Bills) */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
         }
     </style>
 </head>
 
 <body class="bg-deep text-slate-200 h-[100dvh] w-screen flex flex-col overflow-hidden font-sans">
 
-    <header class="flex justify-between items-center px-6 py-4 bg-surface/90 border-b border-border shrink-0">
+    <header class="flex justify-between items-center px-6 py-4 bg-surface/90 border-b border-border shrink-0 z-20">
         <div>
             <div class="text-lg font-black text-white tracking-wide">
-                ಶ್ರೀ ಗುರುಸಿದ್ಧಪ್ಪ <span class="text-gold">ಟ್ರೇಡಿಂಗ್ ಕಂಪನಿ</span>
+                ಶ್ರೀ ಗುರುಸಿದ್ಧಪ್ಪ <span class="text-gold">ಟ್ರೇಡಿಂಗ್</span>
             </div>
         </div>
         <a href="view_bills.html"
-            class="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-700">
+            class="flex items-center gap-2 bg-slate-800 px-4 py-2 rounded-full border border-slate-700 hover:bg-slate-700 transition">
             <span class="text-[10px] font-bold uppercase tracking-wider">History</span>
             <i class="fas fa-clock text-gold text-[10px]"></i>
         </a>
     </header>
 
-    <main class="flex-1 flex flex-col px-5 py-4 gap-4 min-h-0">
+    <main class="flex-1 flex flex-col px-4 py-4 gap-3 min-h-0 overflow-y-auto custom-scroll">
 
-        <!-- Bill No -->
-        <div class="premium-box rounded-xl px-4 py-3 flex items-center">
-            <div class="w-24 text-[20px] font-bold uppercase tracking-widest text-slate-400">Bill No</div>
-            <span class="text-slate-600 text-3xl font-bold mr-4">#</span>
+        <div class="premium-box rounded-xl px-4 py-3 flex items-center shrink-0">
+            <div class="w-24 text-[16px] font-bold uppercase tracking-widest text-slate-400">Bill No</div>
+            <span class="text-slate-600 text-2xl font-bold mr-2">#</span>
             <input id="billNo" type="number" placeholder="101"
-                class="flex-1 bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none">
+                class="flex-1 bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none w-full">
         </div>
 
-        <!-- Gross / Net -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="premium-box rounded-xl px-4 py-4">
-                <span class="text-[14px] uppercase tracking-widest text-slate-400">Total (Gross)</span>
-                <div class="flex items-center mt-3">
-                    <span class="text-slate-400 text-3xl mr-1">₹</span>
+        <div class="grid grid-cols-2 gap-3 shrink-0">
+            <div class="premium-box rounded-xl px-4 py-3">
+                <span class="text-[10px] uppercase tracking-widest text-slate-400">Total (Gross)</span>
+                <div class="flex items-center mt-2">
+                    <span class="text-slate-500 text-2xl mr-1">₹</span>
                     <input id="grossInput" type="number" placeholder="0"
-                        class="w-full bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none"
+                        class="w-full bg-transparent text-2xl font-black text-white placeholder-slate-700 focus:outline-none"
                         oninput="delayedCalculate()">
                 </div>
             </div>
 
-            <div class="premium-box rounded-xl px-4 py-4">
-                <span class="text-[14px] uppercase tracking-widest text-slate-400">Net Amount</span>
-                <div class="flex items-center mt-3">
-                    <span class="text-slate-400 text-3xl mr-1">₹</span>
+            <div class="premium-box rounded-xl px-4 py-3">
+                <span class="text-[10px] uppercase tracking-widest text-slate-400">Net Amount</span>
+                <div class="flex items-center mt-2">
+                    <span class="text-slate-500 text-2xl mr-1">₹</span>
                     <input id="netInput" type="number" placeholder="0"
-                        class="w-full bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none"
+                        class="w-full bg-transparent text-2xl font-black text-white placeholder-slate-700 focus:outline-none"
                         oninput="delayedCalculate()">
                 </div>
             </div>
         </div>
 
-        <!-- Advance / Rate -->
-        <div class="grid grid-cols-2 gap-4">
-            <div class="premium-box rounded-xl px-4 py-4">
-                <span class="text-[14px] uppercase tracking-widest text-gold">Advance</span>
-                <div class="flex items-center mt-3">
-                    <span id="advanceSymbol" class="text-gold text-3xl mr-1">₹</span>
+        <div class="grid grid-cols-2 gap-3 shrink-0">
+            <div class="premium-box rounded-xl px-4 py-3">
+                <span class="text-[10px] uppercase tracking-widest text-gold">Advance</span>
+                <div class="flex items-center mt-2">
+                    <span id="advanceSymbol" class="text-gold text-2xl mr-1">₹</span>
                     <input id="advanceDisplay" readonly placeholder="0"
-                        class="w-full bg-transparent text-3xl font-black text-gold focus:outline-none truncate">
+                        class="w-full bg-transparent text-2xl font-black text-gold focus:outline-none truncate">
                 </div>
             </div>
 
-            <div class="premium-box rounded-xl p-2 flex gap-2">
-                <label class="flex-1 cursor-pointer">
+            <div class="premium-box rounded-xl p-1.5 flex gap-1.5">
+                <label class="flex-1 cursor-pointer relative group">
                     <input type="radio" name="commRate" value="0.02" checked onchange="instantCalculate()"
                         class="peer hidden">
-                    <div
-                        class="h-full flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 peer-checked:border-gold peer-checked:text-gold">
-                        <span class="text-xl font-black">2%</span>
+                    <div class="h-full flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 peer-checked:border-gold peer-checked:text-gold peer-checked:bg-gold/5 transition">
+                        <span class="text-lg font-black">2%</span>
                     </div>
                 </label>
 
-                <label class="flex-1 cursor-pointer">
+                <label class="flex-1 cursor-pointer relative group">
                     <input type="radio" name="commRate" value="0.03" onchange="instantCalculate()" class="peer hidden">
-                    <div
-                        class="h-full flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 peer-checked:border-gold peer-checked:text-gold">
-                        <span class="text-xl font-black">3%</span>
+                    <div class="h-full flex items-center justify-center rounded-lg border border-slate-700 text-slate-500 peer-checked:border-gold peer-checked:text-gold peer-checked:bg-gold/5 transition">
+                        <span class="text-lg font-black">3%</span>
                     </div>
                 </label>
             </div>
         </div>
 
-        <!-- Bag Count -->
-        <div class="premium-box rounded-xl px-5 py-3 flex items-center">
-            <div class="w-24 text-[20px] font-bold uppercase tracking-widest text-slate-400">Total Bags</div>
-            <i class="fas fa-box text-slate-500 text-xl -ml-3 mr-7"></i>
+        <div class="premium-box rounded-xl px-5 py-3 flex items-center shrink-0">
+            <div class="w-24 text-[16px] font-bold uppercase tracking-widest text-slate-400">Bags</div>
+            <i class="fas fa-box text-slate-600 text-xl -ml-3 mr-6"></i>
             <input id="bagInput" type="number" placeholder="0"
-                class="flex-1 bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none"
+                class="flex-1 bg-transparent text-3xl font-black text-white placeholder-slate-700 focus:outline-none w-full"
                 oninput="delayedCalculate()">
         </div>
 
-        <!-- Summary -->
-        <div class="premium-box rounded-xl px-4 py-4 flex flex-col gap-3">
+        <div class="premium-box rounded-xl px-4 py-4 flex flex-col gap-3 shrink-0">
 
             <div class="flex justify-between items-center border-b border-dashed border-slate-600 pb-2">
-                <span class="text-xl font-medium uppercase tracking-wide text-slate-400">Commission</span>
-                <span class="text-3xl font-bold text-white">₹<span id="dispComm">0</span></span>
+                <span class="text-sm font-medium uppercase tracking-wide text-slate-400">Commission</span>
+                <span class="text-xl font-bold text-white">₹<span id="dispComm">0</span></span>
             </div>
 
             <div class="flex justify-between items-center border-b border-dashed border-slate-600 pb-2">
-                <span class="text-xl font-medium uppercase tracking-wide text-slate-400">Hamali</span>
-                <span class="text-3xl font-bold text-white">₹<span id="dispHamali">0</span></span>
+                <span class="text-sm font-medium uppercase tracking-wide text-slate-400">Hamali</span>
+                <span class="text-xl font-bold text-white">₹<span id="dispHamali">0</span></span>
             </div>
 
-            <div class="flex justify-between items-center">
-                <span class="text-xl font-semibold uppercase tracking-wide text-rose-400">Total Deductions</span>
-                <span class="text-4xl font-bold text-rose-400">(-) ₹<span id="dispTotalDeduction">0</span></span>
+            <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-semibold uppercase tracking-wide text-rose-400">Total Deductions</span>
+                <span class="text-2xl font-bold text-rose-400">(-) ₹<span id="dispTotalDeduction">0</span></span>
             </div>
 
-            <div class="mt-2 bg-surface/80 rounded-lg px-3 py-3 text-center border border-slate-600 shadow-md">
-                <span class="text-[10px] font-bold uppercase tracking-widest text-gold opacity-90">Net Payable
-                    Amount</span>
-                <div id="finalPayableContainer" class="text-4xl font-black mt-1 text-white">
+            <div class="premium-box rounded-lg px-3 py-4 text-center border-gold/30 relative overflow-hidden">
+                <div class="absolute inset-0 bg-gold/5"></div>
+                <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-gold relative z-10">Net Payable Amount</span>
+                <div id="finalPayableContainer" class="text-4xl font-black mt-1 text-gold relative z-10">
                     ₹<span id="finalPayable">0</span>
                 </div>
             </div>
 
         </div>
+        
+        <div class="h-4 shrink-0"></div>
 
         <div id="toast"
             class="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-deep px-6 py-3 rounded-full shadow-2xl transform transition-all duration-300 opacity-0 translate-y-[-20px] pointer-events-none z-50 font-black flex items-center gap-2 border border-emerald-400">
             <i class="fas fa-check-circle text-lg"></i>
-            <span>SAVED SUCCESSFULLY!</span>
+            <span>SAVED!</span>
         </div>
 
     </main>
 
-    <footer class="bg-surface border-t border-border px-6 py-5">
+    <footer class="bg-surface border-t border-border px-6 py-4 shrink-0 z-20">
         <button onclick="saveBill()"
-            class="w-full h-14 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-lg text-slate-900 shadow-lg active:scale-[0.98] transition-all flex items-center justify-center">
+            class="w-full h-12 bg-gradient-to-r from-amber-500 to-yellow-500 rounded-xl font-bold text-lg text-slate-900 shadow-lg active:scale-[0.98] transition-all flex items-center justify-center">
             <i class="fas fa-save mr-2"></i> SAVE RECORD
         </button>
     </footer>
