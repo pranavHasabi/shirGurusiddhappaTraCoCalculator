@@ -500,7 +500,35 @@
         const fieldNames = { billNo: 'Bill No', grossInput: 'Total (Gross)', netInput: 'Net Amount', bagInput: 'Bags' };
 
         function isMobile() { return window.innerWidth < 768; }
-        function buzz(ms) { if (navigator.vibrate) navigator.vibrate(ms); }
+        // Haptics: Android/Chrome use the Vibration API. iPhone Safari has no vibration API, but
+        // toggling a hidden <input type=checkbox switch> inside a tap gives a real tick (iOS 17.4+).
+        const HAPTIC_PATTERNS = {
+            key:     { vib: 8,                    ticks: [0] },             // light tick on each digit
+            delete:  { vib: 14,                   ticks: [0] },             // slightly firmer for backspace
+            next:    { vib: [18, 45, 30],         ticks: [0, 70] },         // distinct double tap for Next / Done
+            clear:   { vib: [14, 40, 14, 40, 14], ticks: [0, 60, 120] },    // hold backspace to clear all
+            success: { vib: [15, 40, 15, 40, 45], ticks: [0, 80, 160] },    // bill saved
+            error:   { vib: [30, 40, 30],         ticks: [0, 90] }          // something is wrong
+        };
+        const iosHaptic = (() => {
+            const label = document.createElement('label');
+            label.setAttribute('aria-hidden', 'true');
+            label.style.cssText = 'position:fixed;left:-100px;top:-100px;width:1px;height:1px;opacity:0;pointer-events:none;overflow:hidden';
+            const box = document.createElement('input');
+            box.type = 'checkbox';
+            box.setAttribute('switch', '');
+            box.tabIndex = -1;
+            label.appendChild(box);
+            document.body.appendChild(label);
+            return () => label.click();
+        })();
+        function haptic(kind) {
+            const p = HAPTIC_PATTERNS[kind] || HAPTIC_PATTERNS.key;
+            try {
+                if (navigator.vibrate) navigator.vibrate(p.vib);
+                else p.ticks.forEach(t => (t ? setTimeout(iosHaptic, t) : iosHaptic()));
+            } catch (e) { /* haptics are optional */ }
+        }
 
 
         // --- EVENT LISTENERS ---
@@ -584,7 +612,7 @@
             } else if (key === '00' && !cur) {
                 return;
             } else if (cur.length + key.length > 10) {
-                buzz([20, 30, 20]);
+                haptic('error');
                 return;
             } else {
                 activeInput.value = cur + key;
@@ -599,11 +627,11 @@
             btn.addEventListener('pointerdown', (e) => {
                 e.preventDefault();
                 btn.classList.add('pressed');
-                buzz(key === 'enter' ? 20 : 10);
+                haptic(key === 'enter' ? 'next' : key === 'clear' ? 'delete' : 'key');
                 pressKey(key);
                 if (key === 'clear') {
                     holdTimer = setTimeout(() => {
-                        if (activeInput) { activeInput.value = ''; calculate(); buzz([15, 40, 15]); }
+                        if (activeInput) { activeInput.value = ''; calculate(); haptic('clear'); }
                     }, 550);
                 }
             });
@@ -762,10 +790,10 @@
             if (calc.net <= 0) { markError(netInput); error = true; }
             if (calc.bags <= 0) { markError(bagInput); error = true; }
 
-            if (error) { buzz([30, 40, 30]); showToast('Fill in the highlighted fields', true); return; }
+            if (error) { haptic('error'); showToast('Fill in the highlighted fields', true); return; }
             if (calc.advanceError) {
                 markError(document.getElementById('hero'));
-                buzz([30, 40, 30]);
+                haptic('error');
                 showToast('Net amount is more than gross', true);
                 return;
             }
@@ -789,7 +817,7 @@
 
             localStorage.setItem('dailyBillsStore', JSON.stringify(existingData));
 
-            buzz(40);
+            haptic('success');
             showToast('Bill saved');
             billNo.value = '';
             grossInput.value = '';
