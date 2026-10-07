@@ -1,4 +1,4 @@
-const CACHE = 'gst-calc-v2';
+const CACHE = 'gst-calc-v3';
 const FILES = ['./', './index.html', './view_bills.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {

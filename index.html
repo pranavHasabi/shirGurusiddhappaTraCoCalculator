@@ -91,7 +91,7 @@
             display: flex; flex-direction: column; gap: 0; padding: 6px 16px 16px;
             background: var(--panel); border: 1.5px solid var(--line); border-radius: 20px;
         }
-        .sum-grid { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; margin-bottom: 14px; }
+        .sum-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 14px; margin-bottom: 14px; }
         .sum-cell { padding: 12px 0; border-bottom: 1px dashed var(--line); min-width: 0; }
         .sum-cell:nth-last-child(-n+2) { border-bottom: 0; }
         .sum-cell.right { text-align: right; }
@@ -168,6 +168,9 @@
             width: 100%; min-width: 0; background: transparent; border: 0; outline: 0;
             font-size: inherit; font-weight: inherit; caret-color: var(--brass);
             -webkit-user-select: text; user-select: text;
+            /* iOS Safari adds its own padding and indent to inputs; zero it so the value lines up with its label */
+            -webkit-appearance: none; appearance: none; border-radius: 0;
+            padding: 0; margin: 0; text-indent: 0; text-align: left; line-height: 1.15; height: 1.15em;
         }
         .field input::placeholder { color: #334155; }
         .field-hint { font-size: 11px; color: var(--muted); text-align: right; flex-shrink: 0; }
@@ -180,7 +183,9 @@
         .field.error { border-color: var(--rose); animation: shake .35s; box-shadow: 0 0 0 4px rgba(251,113,133,.16); }
         @keyframes shake { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
-        .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+        .field, .field-body, .field-input { min-width: 0; }
+        .field-input { white-space: nowrap; }
         .row2 .field { flex-direction: column; align-items: stretch; gap: 2px; padding: 12px 16px; }
         .row2 .field-input { font-size: 24px; }
 
@@ -578,6 +583,9 @@
                 activeInput.value = (cur || '0') + '.';
             } else if (key === '00' && !cur) {
                 return;
+            } else if (cur.length + key.length > 10) {
+                buzz([20, 30, 20]);
+                return;
             } else {
                 activeInput.value = cur + key;
             }
@@ -708,8 +716,31 @@
             padNet.textContent = '₹' + finalAmt.toLocaleString('en-IN');
             padNet.style.color = finalAmt < 0 ? 'var(--rose)' : '';
 
+            fitAll();
             return { gross, net, bags, commission, hamali, totalDeduction, advance, advanceError, rate, finalAmt };
         }
+
+        // Shrink text step by step until it fits its box, so big amounts never overflow
+        function fit(measureEl, sizeEl, min) {
+            sizeEl.style.fontSize = '';
+            let size = parseFloat(getComputedStyle(sizeEl).fontSize);
+            while (measureEl.scrollWidth > measureEl.clientWidth + 0.5 && size > min) {
+                size -= 1;
+                sizeEl.style.fontSize = size + 'px';
+            }
+        }
+
+        function fitAll() {
+            document.querySelectorAll('.numpad-target').forEach(i => fit(i, i.parentElement, 14));
+            document.querySelectorAll('#advBox .field-input').forEach(el => fit(el, el, 14));
+            document.querySelectorAll('.sum-cell b').forEach(b => fit(b, b, 14));
+            const amt = document.querySelector('.hero-amount');
+            if (amt) fit(amt, amt, 20);
+            const pn = document.getElementById('padNet');
+            if (pn) fit(pn.parentElement, pn, 12);
+        }
+        window.addEventListener('resize', fitAll);
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitAll);
 
         function showToast(text, warn) {
             const toast = document.getElementById('toast');
